@@ -125,7 +125,6 @@ class WeatherData(GenericAPIView):
     serializer_class = WeatherDataSerializer
     def post(self, request):
         token = request.META.get("Authorizationn")
-        print(token)
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
