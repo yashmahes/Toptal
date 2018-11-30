@@ -7,7 +7,7 @@ class User(models.Model):
     email = models.EmailField(max_length=50)
     password = models.CharField(max_length=50)
     user_type = models.CharField(max_length=50)
-    accesstoken = models.CharField(max_length=255)
+    access_token = models.CharField(max_length=255, blank=True, null=True)
     
 
 class Weather(models.Model):
