@@ -107,7 +107,7 @@ class UserLogin(GenericAPIView):
                         user.save()
                         isAuthenticated = True
 
-                        return Response({'message': "User successfully logged in"}, status=status.HTTP_200_OK)
+                        return Response({'message': "User successfully logged in", 'access_token': user.access_token}, status=status.HTTP_200_OK)
                 except:
                     return Response("Invalid details", status=status.HTTP_401_UNAUTHORIZED)
 
@@ -124,6 +124,8 @@ class WeatherData(GenericAPIView):
    
     serializer_class = WeatherDataSerializer
     def post(self, request):
+        token = request.META.get("Authorizationn")
+        print(token)
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
