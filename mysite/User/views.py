@@ -2,14 +2,17 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import viewsets
-from .serializers import UserLoginSerializer, UserRegisterSerializer
-from .models import User
+from .serializers import UserLoginSerializer, UserRegisterSerializer, WeatherDataSerializer
+from .models import User, Weather
 from rest_framework.generics import GenericAPIView
 import datetime
 from rest_framework.response import Response
 from rest_framework import status
 import logging
+from weather import Weather, Unit
+import uuid
 
+isAuthenticated = False
 
 class UserRegister(GenericAPIView):
    
@@ -34,16 +37,7 @@ class UserRegister(GenericAPIView):
                     required: true
                     type: password
                     paramType: form
-                - name: phone_no
-                    description: Phone number of the user
-                    required: true
-                    type: string
-                    paramType: form
-                - name: country_code
-                    description: Country Code of the user
-                    required: true
-                    type: string
-                    paramType: form
+                
 
         responseMessages:
                 - code: 400
@@ -55,6 +49,7 @@ class UserRegister(GenericAPIView):
         """
         try:
             serializer = self.serializer_class(data=request.data)
+            
             if serializer.is_valid():
                 serializer.save()
                 data = serializer.data
@@ -85,17 +80,7 @@ class UserLogin(GenericAPIView):
                     required: true
                     type: password
                     paramType: form
-                - name: device_type
-                    description: Device Type
-                    required: true
-                    type: string
-                    paramType: form
-                - name: device_id
-                    description: Device ID
-                    required: true
-                    type: string
-                    paramType: form
-
+               
         responseMessages:
                 - code: 400
                     message: Invalid form details
@@ -117,6 +102,11 @@ class UserLogin(GenericAPIView):
                     user = User.objects.get(email= data['email'])
                
                     if user.password == data['password']:
+                        uid = uuid.uuid4()
+                        user.access_token = uid.hex
+                        user.save()
+                        isAuthenticated = True
+
                         return Response({'message': "User successfully logged in"}, status=status.HTTP_200_OK)
                 except:
                     return Response("Invalid details", status=status.HTTP_401_UNAUTHORIZED)
@@ -130,9 +120,42 @@ class UserLogin(GenericAPIView):
 
 
 
+class WeatherData(GenericAPIView):
+   
+    serializer_class = WeatherDataSerializer
+    def post(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+             
+                data = serializer.data
+                mydate = data['date']
+                mylocation = data['location']
+                weather = Weather(unit=Unit.CELSIUS)
+                location = weather.lookup_by_location(mylocation)
+                condition = location.condition
+                condition = condition.text
+
+                return Response(condition, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except (AttributeError, KeyError, TypeError) as error:
+            logging.error(error, exc_info=True)
+            content = {'message': "INTERNAL_SERVER_ERROR"}
+            return Response(content, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
+class Logout(GenericAPIView):
+   
+    serializer_class = UserLoginSerializer
+    def get(self, request):
+        try:
+            isAuthenticated = False
+            return Response({'message': "User successfully logged out"}, status=status.HTTP_200_OK)
+           
+        except (AttributeError, KeyError, TypeError) as error:
+            logging.error(error, exc_info=True)
+            content = {'message': "INTERNAL_SERVER_ERROR"}
+            return Response(content, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
