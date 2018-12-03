@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import viewsets
-from .serializers import UserLoginSerializer, UserRegisterSerializer, WeatherDataSerializer
+from .serializers import UserLoginSerializer, UserRegisterSerializer, WeatherDataSerializer, JoggingSerializer
 from .models import User, Weather
 from rest_framework.generics import GenericAPIView
 import datetime
@@ -49,9 +49,11 @@ class UserRegister(GenericAPIView):
                     message: Success
         """
         try:
+            request.data['created_at'] = datetime.datetime.now()
             serializer = self.serializer_class(data=request.data)
             
             if serializer.is_valid():
+                
                 serializer.save()
                 data = serializer.data
 
@@ -130,7 +132,6 @@ class WeatherData(GenericAPIView):
         token = request.META.get("HTTP_AUTHORIZATION")
         token_array = token.split(' ')
 
-        
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():

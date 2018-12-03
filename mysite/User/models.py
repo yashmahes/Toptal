@@ -21,4 +21,13 @@ class Weather(models.Model):
     def __str__(self):
         return self.location
    
+class Jogging(models.Model):
+    location = models.CharField(max_length=50)
+    date = models.DateField()
+    distance = models.IntegerField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+
+    def __str__(self):
+        return self.distance
 
