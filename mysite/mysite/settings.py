@@ -70,7 +70,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
-
+CACHE_TIMEOUT = 7200
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases

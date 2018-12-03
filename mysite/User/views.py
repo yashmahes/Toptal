@@ -11,6 +11,7 @@ from rest_framework import status
 import logging
 from weather import Weather, Unit
 import uuid
+from common.decorators import requires_auth
 
 isAuthenticated = False
 
@@ -65,6 +66,7 @@ class UserRegister(GenericAPIView):
 class UserLogin(GenericAPIView):
    
     serializer_class = UserLoginSerializer
+    
     def post(self, request):
         """
         To login in the system
@@ -123,8 +125,12 @@ class UserLogin(GenericAPIView):
 class WeatherData(GenericAPIView):
    
     serializer_class = WeatherDataSerializer
+    @requires_auth
     def post(self, request):
-        token = request.META.get("Authorizationn")
+        token = request.META.get("HTTP_AUTHORIZATION")
+        token_array = token.split(' ')
+
+        
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
